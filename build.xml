@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<project name="lang" default="parser">
+
+	<!-- ANTLR version -->
+	<property name="antlr.version" value="4.5" />
+
+	<!-- ProbLang parser -->
+	<target name="problang-check-parser">
+		<condition property="problang.parser.uptodate">
+			<and>
+				<uptodate srcfile="src/problang/ProbLang.g" targetfile="src/problang/parser/ProbLangParser.java" />
+				<uptodate srcfile="src/problang/ProbLang.g" targetfile="src/problang/parser/ProbLangLexer.java" />
+				<uptodate srcfile="src/problang/ProbLang.g" targetfile="src/problang/parser/ProbLangListener.java" />
+			</and>
+		</condition>
+	</target>
+
+	<target name="problang" depends="problang-check-parser" unless="problang.parser.uptodate">
+		<java jar="lib/antlr-${antlr.version}-complete.jar" dir="src/problang/" fork="true" failonerror="true">
+			<arg value="-o" />
+			<arg value="parser/" />
+			<arg value="-no-listener" />
+			<arg value="-package" />
+			<arg value="problang.parser; import static problang.AST.*" />
+			<arg value="ProbLang.g" />
+		</java>
+	</target>
+
+	<target name="parser" depends="problang" >
+	</target>
+	
+</project>

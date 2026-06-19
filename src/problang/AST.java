@@ -582,17 +582,15 @@ public interface AST {
 	}
 	
 	/**
-	 * ProbLang sampling expressions.
+	 * A flip expression has the syntax
 	 *
-	 * (flip)      - a fair coin; (flip p) - #t with probability p
-	 * (uniform a b) - a real number drawn uniformly from [a, b)
-	 * (random n)  - an integer drawn uniformly from 0 .. n-1
+	 *  (flip) or (flip probability)
 	 *
 	 * @author hridesh
 	 *
 	 */
 	public static class FlipExp extends Exp {
-		private Exp _prob; // probability of #t; null denotes the default 0.5
+		private Exp _prob;
 		public FlipExp(Exp prob){ _prob = prob; }
 		public Exp prob() { return _prob; }
 		public Object accept(Visitor visitor, Env env) {
@@ -600,6 +598,14 @@ public interface AST {
 		}
 	}
 
+	/**
+	 * A uniform expression has the syntax
+	 *
+	 *  (uniform low high)
+	 *
+	 * @author hridesh
+	 *
+	 */
 	public static class UniformExp extends Exp {
 		private Exp _lo;
 		private Exp _hi;
@@ -611,6 +617,14 @@ public interface AST {
 		}
 	}
 
+	/**
+	 * A random expression has the syntax
+	 *
+	 *  (random bound)
+	 *
+	 * @author hridesh
+	 *
+	 */
 	public static class RandomExp extends Exp {
 		private Exp _bound;
 		public RandomExp(Exp bound){ _bound = bound; }
@@ -621,11 +635,9 @@ public interface AST {
 	}
 
 	/**
-	 * ProbLang conditioning and inference expressions.
+	 * An observe expression has the syntax
 	 *
-	 * (observe c) - rejects the current sample (inside a query/expect) if c is #f
-	 * (query e)   - the empirical distribution of e over many samples
-	 * (expect e)  - the mean value of e over many samples
+	 *  (observe condition)
 	 *
 	 * @author hridesh
 	 *
@@ -639,6 +651,14 @@ public interface AST {
 		}
 	}
 
+	/**
+	 * A query expression has the syntax
+	 *
+	 *  (query expression)
+	 *
+	 * @author hridesh
+	 *
+	 */
 	public static class QueryExp extends Exp {
 		private Exp _body;
 		public QueryExp(Exp body){ _body = body; }
@@ -648,6 +668,14 @@ public interface AST {
 		}
 	}
 
+	/**
+	 * An expect expression has the syntax
+	 *
+	 *  (expect expression)
+	 *
+	 * @author hridesh
+	 *
+	 */
 	public static class ExpectExp extends Exp {
 		private Exp _body;
 		public ExpectExp(Exp body){ _body = body; }

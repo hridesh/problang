@@ -89,7 +89,7 @@ public interface Value {
 		public DynamicError(String message) { this.message = message; }
 	    public String tostring() { return "" + message; }
 	}
-	static class DistVal implements Value { // New in the problang: an empirical distribution
+	static class DistVal implements Value { //New in the problang
 		private final java.util.Map<String,Double> _dist; // outcome -> probability
 		public DistVal(java.util.Map<String,Double> dist) { _dist = dist; }
 		public java.util.Map<String,Double> dist() { return _dist; }

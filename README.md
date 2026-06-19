@@ -62,21 +62,3 @@ manual build-path or compiler settings needed:
 The Eclipse project files (`.classpath`, `.project`, `.settings/`) are also
 included for a plain Java-project import; they set the compiler to Java 17 to
 match the build.
-
-# Probabilistic features
-
-ProbLang extends the functions+lists base with randomness, conditioning, and
-inference:
-
-- `(flip)` / `(flip p)` — a Boolean sample; `#t` with probability `p` (default 0.5).
-- `(uniform a b)` — a real number drawn uniformly from `[a, b)`.
-- `(random n)` — an integer drawn uniformly from `0 … n-1`.
-- `(observe c)` — conditioning; inside a `query`/`expect`, rejects the current
-  sample when `c` is `#f`.
-- `(query e)` — the empirical distribution of `e` over many samples
-  (rejection sampling, 1000 samples), printed as `outcome : probability`.
-- `(expect e)` — the mean of `e` (numbers, or 1/0 for booleans) over many samples.
-
-See `src/problang/examples/` (`coin.scm`, `dice.scm`, `expectation.scm`). Because
-`query`/`expect` use rejection sampling, a rarely-satisfied `observe` condition
-can make them slow.

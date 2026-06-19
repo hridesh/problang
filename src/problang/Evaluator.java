@@ -15,8 +15,19 @@ public class Evaluator implements Visitor<Value> {
 
 	Env initEnv = initialEnv(); 
 	
+	private final java.util.Random _random = new java.util.Random();
+	private static final int SAMPLES = 1000; // Monte-Carlo samples per query/expect
+
+	// Thrown by (observe c) when c is false; caught once per sample by query/expect.
+	@SuppressWarnings("serial")
+	private static class Reject extends RuntimeException {}
+
 	Value valueOf(Program p) {
-			return (Value) p.accept(this, initEnv);
+			try {
+				return (Value) p.accept(this, initEnv);
+			} catch (Reject r) {
+				return new DynamicError("observe failed outside of a query or expect");
+			}
 	}
 	
 	@Override
@@ -246,6 +257,85 @@ public class Evaluator implements Visitor<Value> {
 		} catch (IOException ex) {
 			return new DynamicError(ex.getMessage());
 		}
+	}
+
+	@Override
+	public Value visit(FlipExp e, Env env) {
+		double p = 0.5;
+		if (e.prob() != null) {
+			Value pv = (Value) e.prob().accept(this, env);
+			if (!(pv instanceof NumVal))
+				return new DynamicError("flip expects a numeric probability in " + ts.visit(e, env));
+			p = ((NumVal) pv).v();
+		}
+		return new BoolVal(_random.nextDouble() < p);
+	}
+
+	@Override
+	public Value visit(UniformExp e, Env env) {
+		Value lo = (Value) e.lo().accept(this, env);
+		Value hi = (Value) e.hi().accept(this, env);
+		if (!(lo instanceof NumVal) || !(hi instanceof NumVal))
+			return new DynamicError("uniform expects two numbers in " + ts.visit(e, env));
+		double a = ((NumVal) lo).v(), b = ((NumVal) hi).v();
+		return new NumVal(a + _random.nextDouble() * (b - a));
+	}
+
+	@Override
+	public Value visit(RandomExp e, Env env) {
+		Value n = (Value) e.bound().accept(this, env);
+		if (!(n instanceof NumVal))
+			return new DynamicError("random expects a numeric bound in " + ts.visit(e, env));
+		int bound = (int) ((NumVal) n).v();
+		if (bound <= 0)
+			return new DynamicError("random expects a positive bound in " + ts.visit(e, env));
+		return new NumVal(_random.nextInt(bound));
+	}
+
+	@Override
+	public Value visit(ObserveExp e, Env env) {
+		Value c = (Value) e.cond().accept(this, env);
+		if (!(c instanceof BoolVal))
+			return new DynamicError("observe expects a boolean condition in " + ts.visit(e, env));
+		if (!((BoolVal) c).v()) throw new Reject();
+		return new UnitVal();
+	}
+
+	@Override
+	public Value visit(QueryExp e, Env env) {
+		java.util.Map<String,Integer> counts = new java.util.TreeMap<String,Integer>();
+		int valid = 0;
+		for (int i = 0; i < SAMPLES; i++) {
+			try {
+				Value v = (Value) e.body().accept(this, env);
+				String key = v.tostring();
+				counts.put(key, counts.getOrDefault(key, 0) + 1);
+				valid++;
+			} catch (Reject r) { /* rejected sample: discard */ }
+		}
+		if (valid == 0)
+			return new DynamicError("query: every sample was rejected (is the condition satisfiable?)");
+		java.util.Map<String,Double> dist = new java.util.TreeMap<String,Double>();
+		for (java.util.Map.Entry<String,Integer> en : counts.entrySet())
+			dist.put(en.getKey(), en.getValue() / (double) valid);
+		return new DistVal(dist);
+	}
+
+	@Override
+	public Value visit(ExpectExp e, Env env) {
+		double sum = 0; int valid = 0;
+		for (int i = 0; i < SAMPLES; i++) {
+			try {
+				Value v = (Value) e.body().accept(this, env);
+				if (v instanceof NumVal) sum += ((NumVal) v).v();
+				else if (v instanceof BoolVal) sum += ((BoolVal) v).v() ? 1 : 0;
+				else return new DynamicError("expect requires a numeric or boolean body in " + ts.visit(e, env));
+				valid++;
+			} catch (Reject r) { /* rejected sample: discard */ }
+		}
+		if (valid == 0)
+			return new DynamicError("expect: every sample was rejected (is the condition satisfiable?)");
+		return new NumVal(sum / valid);
 	}
 
 	private Env initialEnv() {

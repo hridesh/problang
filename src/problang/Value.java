@@ -89,4 +89,19 @@ public interface Value {
 		public DynamicError(String message) { this.message = message; }
 	    public String tostring() { return "" + message; }
 	}
+	static class DistVal implements Value { // New in the problang: an empirical distribution
+		private final java.util.Map<String,Double> _dist; // outcome -> probability
+		public DistVal(java.util.Map<String,Double> dist) { _dist = dist; }
+		public java.util.Map<String,Double> dist() { return _dist; }
+	    public String tostring() {
+			StringBuilder sb = new StringBuilder();
+			boolean first = true;
+			for (java.util.Map.Entry<String,Double> e : _dist.entrySet()) {
+				if (!first) sb.append("\n");
+				first = false;
+				sb.append(e.getKey()).append(" : ").append(String.format("%.4f", e.getValue()));
+			}
+			return sb.toString();
+	    }
+	}
 }

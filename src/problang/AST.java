@@ -581,6 +581,82 @@ public interface AST {
 		}
 	}
 	
+	/**
+	 * ProbLang sampling expressions.
+	 *
+	 * (flip)      - a fair coin; (flip p) - #t with probability p
+	 * (uniform a b) - a real number drawn uniformly from [a, b)
+	 * (random n)  - an integer drawn uniformly from 0 .. n-1
+	 *
+	 * @author hridesh
+	 *
+	 */
+	public static class FlipExp extends Exp {
+		private Exp _prob; // probability of #t; null denotes the default 0.5
+		public FlipExp(Exp prob){ _prob = prob; }
+		public Exp prob() { return _prob; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	public static class UniformExp extends Exp {
+		private Exp _lo;
+		private Exp _hi;
+		public UniformExp(Exp lo, Exp hi){ _lo = lo; _hi = hi; }
+		public Exp lo() { return _lo; }
+		public Exp hi() { return _hi; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	public static class RandomExp extends Exp {
+		private Exp _bound;
+		public RandomExp(Exp bound){ _bound = bound; }
+		public Exp bound() { return _bound; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	/**
+	 * ProbLang conditioning and inference expressions.
+	 *
+	 * (observe c) - rejects the current sample (inside a query/expect) if c is #f
+	 * (query e)   - the empirical distribution of e over many samples
+	 * (expect e)  - the mean value of e over many samples
+	 *
+	 * @author hridesh
+	 *
+	 */
+	public static class ObserveExp extends Exp {
+		private Exp _cond;
+		public ObserveExp(Exp cond){ _cond = cond; }
+		public Exp cond() { return _cond; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	public static class QueryExp extends Exp {
+		private Exp _body;
+		public QueryExp(Exp body){ _body = body; }
+		public Exp body() { return _body; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	public static class ExpectExp extends Exp {
+		private Exp _body;
+		public ExpectExp(Exp body){ _body = body; }
+		public Exp body() { return _body; }
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
 	public interface Visitor <T> {
 		// This interface should contain a signature for each concrete AST node.
 		public T visit(AST.AddExp e, Env env);
@@ -608,5 +684,11 @@ public interface AST {
 		public T visit(AST.ConsExp e, Env env); // Additional expressions for convenience
 		public T visit(AST.ListExp e, Env env); // Additional expressions for convenience
 		public T visit(AST.NullExp e, Env env); // Additional expressions for convenience
-	}	
+		public T visit(AST.FlipExp e, Env env); // New for the problang
+		public T visit(AST.UniformExp e, Env env); // New for the problang
+		public T visit(AST.RandomExp e, Env env); // New for the problang
+		public T visit(AST.ObserveExp e, Env env); // New for the problang
+		public T visit(AST.QueryExp e, Env env); // New for the problang
+		public T visit(AST.ExpectExp e, Env env); // New for the problang
+	}
 }

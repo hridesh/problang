@@ -175,6 +175,31 @@ public class Printer {
 			result += e.arg().accept(this, env);
 			return result + ")";
 		}
-		
+
+		public String visit(AST.FlipExp e, Env env) {
+			if (e.prob() == null) return "(flip)";
+			return "(flip " + e.prob().accept(this, env) + ")";
+		}
+
+		public String visit(AST.UniformExp e, Env env) {
+			return "(uniform " + e.lo().accept(this, env) + " " + e.hi().accept(this, env) + ")";
+		}
+
+		public String visit(AST.RandomExp e, Env env) {
+			return "(random " + e.bound().accept(this, env) + ")";
+		}
+
+		public String visit(AST.ObserveExp e, Env env) {
+			return "(observe " + e.cond().accept(this, env) + ")";
+		}
+
+		public String visit(AST.QueryExp e, Env env) {
+			return "(query " + e.body().accept(this, env) + ")";
+		}
+
+		public String visit(AST.ExpectExp e, Env env) {
+			return "(expect " + e.body().accept(this, env) + ")";
+		}
+
 	}
 }

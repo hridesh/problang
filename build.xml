@@ -2,7 +2,7 @@
 <project name="lang" default="parser">
 
 	<!-- ANTLR version -->
-	<property name="antlr.version" value="4.5" />
+	<property name="antlr.version" value="4.13.2" />
 
 	<!-- ProbLang parser -->
 	<target name="problang-check-parser">

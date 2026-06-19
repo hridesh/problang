@@ -9,6 +9,7 @@ import problang.AST.Program;
 import problang.parser.ProbLangLexer;
 import problang.parser.ProbLangParser;
 
+@SuppressWarnings("deprecation")
 public class Reader {
 	
 	Program read() throws IOException {
